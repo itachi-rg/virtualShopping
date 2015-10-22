@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+   
+    <title>Create Virtual Shop</title>
+    <style>
+	 #pano{
+	  position:absolute;
+	  left:3px;
+	  top:55px;
+	  width:80%;
+	  height:92%;
+	  }
+	  #crosshair {
+	  position : absolute;
+	  top : 41%;
+	  left: 45%;
+	  z-index: 5;
+	  height : 100px;
+	  width: 100px;
+	  opacity: 0.7;
+	  border: 5px solid #eee;
+	  color: white;
+	  }
+	   #iteminfo{
+	 position:absolute;
+	 top:60%;
+	 left:40%;
+	 margin-left:-100px;
+	 align:center;
+	 width:200px;
+	 }
+	 #tabs{
+	 position:absolute;
+	 top:55px;
+	 left:81%;
+	 height:92%;
+	 width:18%
+    </style>
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD5S0wg7HMxt63QEBrpwQsV3eKzsMZPuIU"></script>
+	    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+		 <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+		 
+		  <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+<script>
+	var pos;
+	var heading;
+	var pitch;
+	var zoomlevel;
+	var itemname,itemprice;
+	var locationindex = 0;
+	var emptystring = '';
+	function initialize() {
+		var fenway = new google.maps.LatLng(parseFloat('{{shop.lat}}'),parseFloat('{{shop.lng}}'));
+
+		$('#shopkey').attr('value','{{shopkey}}');
+		$('#cshopkey').attr('value','{{shopkey}}');
+		
+		var panoramaOptions = {
+			position: fenway,
+			pov: {
+				heading: parseFloat('{{shop.head}}'),
+				pitch: parseFloat('{{shop.pitch}}'),
+				zoom: parseFloat('{{shop.zoom}}')
+			},
+			
+			
+		};
+		
+		
+		
+		var panorama = new  google.maps.StreetViewPanorama(document.getElementById('pano'),panoramaOptions);
+		
+		
+		google.maps.event.addListener(panorama, 'pov_changed', function() {
+			
+				var diff = 0;
+				var flag = 0;
+				var i=0;
+
+				pos = panorama.getPosition();
+				heading = panorama.getPov().heading ;
+				heading = heading>=0?heading:360+heading;
+				pitch = panorama.getPov().pitch ;
+				zoomlevel = panorama.getZoom().toFixed(2);
+				
+				$('#lati').attr('value',pos.lat());
+				$('#longi').attr('value',pos.lng());
+				$('#head').attr('value',heading);
+				$('#pitch').attr('value',pitch);
+				$('#zoom').attr('value',zoomlevel);
+				
+				
+				$('#name').val(emptystring);
+				$('#price').val(emptystring);
+				
+				
+				
+								
+				{% for itemlocation in itemlocationlist %}
+				if(i == locationindex){
+				{% for itemloc in itemlocation %}
+						
+						
+						diff = ( Math.pow(2,4-{{itemloc.zoom}}) / 2).toFixed(2)-0;
+						if ( {{itemloc.zoom}} <= zoomlevel ){
+						if ( heading >= {{itemloc.head}}-diff && heading <= {{itemloc.head}}+diff && pitch >= {{itemloc.pitch}}-diff && pitch <= {{itemloc.pitch}}+diff ){
+							{% for itemfound in itemlist%}
+								if( "{{itemloc.item}}" == "{{itemfound.key}}")
+								{
+									flag = 1;
+									itemname = "{{itemfound.item}}";
+									itemprice = {{itemfound.price}};
+									
+									}
+								
+								
+							{% endfor %}
+							
+						
+						}
+						}
+						
+				{% endfor %}
+				}
+						i++;
+				{% endfor %}
+				
+				if(flag){
+						$("#crosshair").css("border","5px solid #009939");
+						//	$("#crosshair").html(itemname);
+						$("#itemname").html(itemname);
+						$("#itemprice").html("{{currency}} "+itemprice);
+						$("#citemname").attr('value',itemname);
+						$("#citemprice").attr('value',itemprice);
+						
+						$('#iteminfo').collapse('show');
+						$('#itemform').collapse('hide');
+						$('#removeitem').collapse('show');
+						
+						}
+						else {
+						$("#crosshair").css("border","5px solid #eee");
+						$("#crosshair").html("");
+						$('#iteminfo').collapse('hide');
+						$('#removeitem').collapse('hide');
+						$('#itemform').collapse('show');
+								itemname = "";
+						
+						}
+				
+		});
+		
+		google.maps.event.addListener(panorama, 'position_changed', function() { 
+			var setflag=0;
+
+			pos = panorama.getPosition() ;
+			heading = panorama.getPov().heading ;
+			heading = heading>=0?heading:360+heading;
+			pitch = panorama.getPov().pitch ;
+			zoomlevel = panorama.getZoom().toFixed(2);
+
+		
+				$('#lati').attr('value',pos.lat());
+				$('#longi').attr('value',pos.lng());
+				$('#head').attr('value',heading);
+				$('#pitch').attr('value',pitch);
+				$('#zoom').attr('value',zoomlevel);
+				
+				$('#removeitem').collapse('hide');
+				$('#name').val(emptystring);
+				$('#price').val(emptystring);
+				
+				$('#itemform').collapse('show');
+				
+				
+			{% for itemposition in itempositionlist %}
+				if({{itemposition.lati}} == pos.lat().toFixed(6) && {{itemposition.longi}} == pos.lng().toFixed(6))
+				{
+				
+				i = 0;
+				{% for itemloca in itemlocationlist %}
+					{% if itemloca[0].itemloc == itemposition.key %}
+						locationindex = i;
+						setflag=1;
+					{% endif %}
+						i++;
+				{% endfor %}
+				};
+			{% endfor %}
+					if(!setflag)locationindex=-99;
+					$("#crosshair").css("border","5px solid #eee");
+					$('#iteminfo').collapse('hide');
+					$('#removeitem').collapse('hide');
+					
+		});
+		
+	}
+	google.maps.event.addDomListener(window, 'load', initialize);
+	
+	
+	function validateform(){
+	var itemname = document.getElementById('name').value.trim();
+	var itemprice = document.getElementById('price').value.trim();
+
+	if(itemname.length==0) {
+		$('#name').focus();
+		return false;
+	 } else if(itemprice.length==0){
+	 $('#price').focus();
+		return false;
+		}
+	return true;
+}
+	
+	
+	$(document).ready(function(){
+		$("#iteminfo").collapse('hide');	
+		$("#removeitem").collapse('hide');			
+		$("#pano").mousedown(function(event){
+			switch(event.which){
+				case 2: 
+						break;
+				case 3: document.getElementById('position').innerHTML = pos;
+						document.getElementById('heading').innerHTML = heading;
+						document.getElementById('pitch').innerHTML = pitch;
+						document.getElementById('zoom').innerHTML = zoomlevel;
+						
+						
+						
+						break;
+			}
+		});
+	
+
+	$('#myTab a').click(function (e) {
+		e.preventDefault()
+			$(this).tab('show')
+			})
+		
+	
+	
+	});
+
+
+
+    </script>
+  </head>
+  <body>
+  
+  <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          
+          <a class="navbar-brand" href="/">Virtual Shopping</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li ><a href="/mainpage">Home</a></li>
+            <li class="active"><a href="#">Edit shop</a></li>
+            <li><a href="/contactus">Contact</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+	
+	<div id="pano" ><div id="crosshair"></div></div>
+		
+		<div id="tabs" class="panel panel-primary">
+			<div class="panel-title" style="position:relative;margin-left:5px;margin-top:5px;">
+				<ul id="myTab"  class="nav nav-pills">
+					<li class="active"><a href="#tabs-1">Virtual shop</a></li>
+					<li><a href="#tabs-2">Shop Info</a></li>
+				</ul>
+			</div>
+			<hr/>
+			<div class="tab-content" style="position:relative;margin-left:5px;margin-right:5px;">
+				<div class="tab-pane active" id="tabs-1">
+					<p><a href="/" class="btn btn-warning" style="width:100%">Done Editing Catalog</a></p>
+					<br/>
+					
+				<div id="removeitem" class="collapse in">	
+				<form id="removeitemform" action="/removeitem" method="post" class="form-horizontal" role="form">
+					<h2> Current Item </h2>
+									
+					
+					<div class="form-group">
+						<label class="col-sm-3 control-label">Item</label>
+						<div class="col-sm-9">
+							<input type="text" class="form-control" name="citemname" id="citemname"  value="" readonly>
+							
+						</div>
+					</div>
+				
+					<div class="form-group">
+						<label class="col-sm-3 control-label">Price ({{currency}}) </label>
+						<div  class="col-sm-9">
+							<input id="citemprice" name="citemprice" class="form-control" type="text"  value="" readonly>
+						</div>
+					</div>
+					
+					<input type = "hidden" name="cshopkey" id="cshopkey" value=""> 
+					
+					<div class="form-group">
+						<div class="col-sm-offset-3 col-sm-9">
+							<button type="submit" class="btn btn-danger" >Remove Current Item</button>
+						</div>
+					</div>
+				 </form>
+				</div>	
+					
+				
+
+				<div id="itemform" class="collapse">
+				
+				<h2> New Item </h2>
+				<form action="/additem" id="myForm" onsubmit="return validateform();" class="form-horizontal" role="form" method="post">
+				
+				<div class="form-group">
+ 				   <label class="col-sm-3 control-label">Item</label>
+  				  <div class="col-sm-9">
+  				    <input type="text" class="form-control" name="name" id="name" placeholder="name of item" onkeyup="validateshopname()" value="">
+					<div id="nvalidationmsg" class="col-sm-10" style="color:#8F0000;font-weight:bold;"></div>
+  				  </div>
+  				</div>
+				<div class="form-group">
+					<label class="col-sm-3 control-label">Price</label>
+					<div  class="col-sm-9">
+						
+						<input id="price" name="price" class="form-control" type="text" placeholder="price of item in {{currency}}" value="">
+					<div id="pvalidationmsg" class="col-sm-10" style="color:#8F0000;font-weight:bold;"></div>
+					</div>
+				</div>
+				
+				<input type = "hidden" name="lati" id="lati" value=""> 
+				<input type = "hidden" name="longi" id="longi" value=""> 
+				<input type = "hidden" name="head" id="head" value=""> 
+				<input type = "hidden" name="pitch" id="pitch" value=""> 
+				<input type = "hidden" name="zoom" id="zoom" value=""> 
+				<input type = "hidden" name="shopkey" id="shopkey" value=""> 
+				
+				<div class="form-group">
+ 				   <div class="col-sm-offset-3 col-sm-9">
+  				    <button type="submit" class="btn btn-success" >Add New Item</button>
+  				  </div>
+ 				 </div>
+				 </form>
+				</div>
+				
+				
+					
+				</div>
+				<div class="tab-pane" id="tabs-2">
+					
+					<p><h3><span class="label label-info">Shopname :</h3></span>{{shop.shopname}}</p>
+					<p><h3><span class="label label-info">Type  :</h3></span> {{shopinfo[0].shoptype}}</p>
+					<p><h3><span class="label label-info">Shop address :</h3></span> {{shopinfo[0].shopaddr}}</p>
+					<p><h3><span class="label label-info">Shop description :</h3></span> {{shopinfo[0].shopdesc}}</p>
+					<p><h3><span class="label label-info">Currency Type :</h3></span> {{shopinfo[0].currency}}</p>
+					<p><button class="btn btn-danger" data-toggle="modal" data-target="#myModal" style="position:absolute;margin-top:70%;width:100%;">Remove this entire shop</button></p>
+
+				</div>
+  
+			</div>
+			
+	
+		</div>
+ 
+  <div class="modal fade" id="myModal"  role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" id="myModalLabel">Are you sure ?</h4>
+      </div>
+      <div class="modal-body">
+       All data about the shop including the items added to the inventory will be completely deleted !!
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <a href="/deleteshop?shopkey={{shopkey}}" class="btn btn-danger">Delete entire shop</a>
+      </div>
+    </div>
+  </div>
+</div>
+  
+  <div class="container">
+		<div id="iteminfo" class="panel panel-default collapse in" align="center">
+			<div id="itemname" class="panel-heading" style="font-weight:bold"></div>
+				<div class="panel-body">
+					<p id="itemprice"></p>
+				</div>
+							
+		</div>	
+		</div>
+  
+	  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+		
+
+ 
+  </body>
+</html>
+{% endautoescape%}

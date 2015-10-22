@@ -1,0 +1,7 @@
+ripple changes done to virtualshop to cover and createvirtualshop :done
+delete item from catalog :
+select currency requirements :done
+select shop changes
+features page
+help to all pages
+video

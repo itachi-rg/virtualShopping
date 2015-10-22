@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+  <head>
+    <meta charset="utf-8">
+	<title>Main Page</title>
+	</head>
+	<body>
+	<p>
+	{% for shop in shoplist %}
+	<a href="/virtualshop?shopkey={{shop.key.urlsafe()}}">virtual {{shop.shopname}}</a><br/>
+	<img src="http://maps.googleapis.com/maps/api/streetview?size=400x400&pano={{shop.panid}}&heading={{shop.head}}&pitch={{shop.pitch}}&key=AIzaSyD5S0wg7HMxt63QEBrpwQsV3eKzsMZPuIU" alt="{{shop.shopname}}" />
+	
+	{% endfor %}
+	</p>
+	
+	{% if user %}
+	<p><a href="/selectshop">Search new shop</a></p>
+	<p>{% if usershops %}
+	Edit already created shops <br/>
+	{% for shop in usershops %}
+	<a href="/createvirtualshop?shopkey={{shop.key.urlsafe()}}">virtual {{shop.shopname}}</a><br/>
+	<img src="http://maps.googleapis.com/maps/api/streetview?size=400x400&pano={{shop.panid}}&heading={{shop.head}}&pitch={{shop.pitch}}&key=AIzaSyD5S0wg7HMxt63QEBrpwQsV3eKzsMZPuIU" alt="{{shop.shopname}}" />
+	
+	{% endfor %}
+	{% endif %}
+	</p><br/><hr/>
+	<p><a href="{{ url }}">{{ url_linktext }}</a></p>
+	{% else %}
+	<p> Login to create your own virtual shop <br/><br/><a href="{{ url }}" >{{ url_linktext }}</a></p>
+	{% endif %}
+ 
+	
+    </body>
+</html>
+{% endautoescape %}

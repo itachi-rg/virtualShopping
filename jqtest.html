@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Street View service</title>
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0px;
+        padding: 0px
+      }
+    </style>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	<script>
+	$(document).ready(function(){
+  $("p").mousedown(function(event){
+    switch(event.which){
+	case 1:alert("left click");
+	break;
+	case 3: alert("right click");
+	break;
+	}
+  });
+});
+</script>
+</head>
+  <body>
+  <p>something</p>
+  </body>
+</html>
+{% endautoescape%}

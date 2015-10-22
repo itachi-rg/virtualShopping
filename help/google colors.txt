@@ -1,0 +1,7 @@
+Red: rgb(213,15,37) or Hex #d50f25
+
+Blue: rgb(51,105,232) or Hex #3369e8
+
+Green: rgb(0,153,57) or Hex #009939
+
+Yellow rgb(238,178,17) or Hex #eeb211

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+  <head>
+	
+    <meta charset="utf-8">
+	<title>Select shop</title>
+	<style>
+      
+      html, body, #map-canvas {
+        height: 100%;
+        margin: 0px;
+        padding: 0px
+      }
+      #panel {
+        position: absolute;
+        top: 5px;
+        left: 94%;
+        margin-left: -180px;
+        width: 250px;
+        z-index: 5;
+        background-color: #fff;
+        padding: 5px;
+        border: 1px solid #999;
+      }
+      #latlng {
+        width: 225px;
+      }
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+	 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/flick/jquery-ui.css">
+	<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+	<script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+	<link rel="stylesheet" href="/resources/demos/style.css">
+    <script>
+var geocoder;
+var map;
+var infowindow = new google.maps.InfoWindow();
+var marker;
+var panorama;
+var pos,heading,pitch,zoomlevel;
+var positionurl;
+
+function initialize() {
+  geocoder = new google.maps.Geocoder();
+  var latlng = new google.maps.LatLng(40.730885,-73.997383);
+  var mapOptions = {
+    zoom: 8,
+    center: latlng,
+    mapTypeId: 'roadmap'
+  }
+  map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+
+  
+  var panoramaOptions = {
+    position: latlng,
+    pov: {
+	
+      heading: 34,
+      pitch: 10,
+	  zoom : 1
+	}
+  };
+  
+  var panorama = new  google.maps.StreetViewPanorama(document.getElementById('pano'),panoramaOptions);
+  map.setStreetView(panorama);
+  
+  google.maps.event.addListener(panorama, 'pov_changed', function() {
+  
+				pos = panorama.getPosition();
+				heading = panorama.getPov().heading ;
+				heading = heading>=0?heading:360+heading;
+				pitch = panorama.getPov().pitch ;
+				zoomlevel = panorama.getZoom();
+				panid = panorama.getPano();
+				positionurl = '/addnewshop?'+'lat='+pos.lat()+'&lng='+pos.lng()+'&h='+heading+'&p='+pitch+'&z='+zoomlevel+'&pid='+panid;
+				
+				
+				$('#info').html(positionurl);
+				
+		});
+		
+		google.maps.event.addListener(panorama, 'position_changed', function() { 
+			pos = panorama.getPosition() ;
+			heading = panorama.getPov().heading ;
+			heading = heading>=0?heading:360+heading;
+			pitch = panorama.getPov().pitch ;
+			zoomlevel = panorama.getZoom();
+			panid = panorama.getPano();
+	
+			positionurl = '/addnewshop?'+'lat='+pos.lat()+'&lng='+pos.lng()+'&h='+heading+'&p='+pitch+'&z='+zoomlevel+'&pid='+panid;
+				$('#info').html(positionurl);
+
+			});
+  
+  }
+
+function search() {
+
+  var input = document.getElementById('latlng').value;
+  var latlngStr = input.split(',');
+  
+  if((!(isNaN(latlngStr[0]))) && (!(isNaN(latlngStr[1])))){
+  var lat = parseFloat(latlngStr[0]);
+  var lng = parseFloat(latlngStr[1]);
+
+  
+  var latlng = new google.maps.LatLng(lat, lng);
+  geocoder.geocode({'latLng': latlng}, function(results, status) {
+    if (status == google.maps.GeocoderStatus.OK) {
+		
+        map.setCenter(results[0].geometry.location);
+		map.setZoom(18);
+    } else {
+      alert('Geocoder failed due to: ' + status);
+    }
+  });
+	}else{
+	
+  geocoder.geocode( { 'address': input}, function(results, status) {
+    if (status == google.maps.GeocoderStatus.OK) {
+      map.setCenter(results[0].geometry.location);
+	  map.setZoom(18);
+      
+    } else {
+      alert('Geocode was not successful for the following reason: ' + status);
+    }
+  });
+	}
+	}
+
+function shopdetails(){
+			
+				
+	var shopname = prompt("enter name of shop");
+	var shoplist = '{{shoplist}}';
+	if(shoplist.search(shopname)!=-1){alert('name already exists , click next and enter some other name');}
+	else{
+	$("#createvirtualshop").attr('href', positionurl+'&sn='+shopname);
+	}
+	}
+	
+	
+google.maps.event.addDomListener(window, 'load', initialize);
+
+    </script>
+    
+  </head>
+  <body>
+    <div id="panel">
+      <input id="latlng" type="text" value="40.714224,-73.961452">
+      <input type="button" value="Reverse Geocode" onclick="search()">
+    </div>
+    <div id="map-canvas" style="left:10px; top: 8px; width: 50%; height: 80%; float:left "></div>
+	<div id="pano" style="position:absolute; left:51%; top: 8px; width: 800px; height: 600px;"></div>
+	<div style="position:absolute;left:10px; top: 650px; width: 50%; height: 80%; float:left "><input type="button" value="Next" onclick="shopdetails()"></div>
+	<div style="position:absolute;left:10px; top: 700px; width: 50%; height: 80%; float:left "><a id="createvirtualshop" href="/addnewshop" >Create virtual shop</a></div>
+	<div id="info" style="position:absolute;left:10px; top: 720px; width: 50%; height: 80%; float:left "></div>
+  </body>
+</html>
+{% endautoescape %}
