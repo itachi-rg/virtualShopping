@@ -1,0 +1,9 @@
+First create a project in the https://console.cloud.google.com
+also set proper project id since
+
+Ex project : VirtualShopping
+project ID : virtualstore3d
+
+python "C:\Program Files (x86)\Google\google_appengine\appcfg.py" update "C:\googs\mapit" -A virtualstore3d -V 1
+
+

@@ -66,7 +66,10 @@ class CoverPage(webapp2.RequestHandler):
 			shoplist = storage.Shop.query().fetch();
 			total = len(shoplist);
 			
-			index = random.randrange(0,total);
+			if (total > 0) :
+				index = random.randrange(0,total);
+			else:
+				index = 0;
 			shop = shoplist[index];
 			shopkey = shop.key;
 			
@@ -125,6 +128,19 @@ class VirtualShop(webapp2.RequestHandler):
 				
 			shopinfo = storage.ShopDetails.query(storage.ShopDetails.shop==shopkey).fetch();
 			curr = shopinfo[0].currency;
+			
+			#for i in itemlist :
+				#logging.warning(i.item)
+				#logging.warning(i.price)
+				
+			for i in itempositionlist :
+				logging.warning(i.lati)
+				logging.warning(i.longi)
+				
+				
+			logging.warning(len(itemlocationlist))
+			
+			
 			template_values = {
 				'itemlist' : itemlist,
 				'itempositionlist' : itempositionlist,
@@ -141,6 +157,8 @@ class VirtualShop(webapp2.RequestHandler):
 			
 class AddItem(webapp2.RequestHandler):
 		def post(self):
+			logging.warning("In addItem")
+			
 			itemname = self.request.get('name');
 			itemprice = float(self.request.get('price'));
 			lati = float(self.request.get('lati'));
@@ -150,13 +168,21 @@ class AddItem(webapp2.RequestHandler):
 			zoomlevel = float(self.request.get('zoom'));
 			shopkey = ndb.Key(urlsafe=self.request.get('shopkey'));
 			
+			logging.debug(itemname)
+			logging.info(itemprice)
+			logging.warning(lati)
+			logging.warning(longi)
+			logging.warning(heading)
+			logging.critical(shopkey)
+			
 			queri = storage.Item.query(storage.Item.item == itemname,storage.Item.price == itemprice);
 			existingitem  = queri.fetch(1);
 			
 			locqueri = storage.ItemPosition.query(storage.ItemPosition.lati == lati,storage.ItemPosition.longi == longi);
 			existingloc  = locqueri.fetch(1);
 			
-			if not existingitem:			
+			if not existingitem:
+				logging.debug('not existing item')
 				additem = storage.Item();
 				additem.item = itemname;
 				additem.price = itemprice;
