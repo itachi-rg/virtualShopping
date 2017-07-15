@@ -93,7 +93,6 @@ var heading;
 		
 		
 		google.maps.event.addListener(panorama, 'pov_changed', function() {
-			
 				var diff = 0;
 				var flag = 0;
 				var i=0;
@@ -105,23 +104,29 @@ var heading;
 				
 				
 								
-				{% for itemlocation in itemlocationlist %}
-				if(i == locationindex){
+				{% for itemlocation in itemlocationlist %}				
+				
+				// Need to fix this in order to allow moving around in a map. Else will have to be stuck in the first position only.
+				//if(i == locationindex){
+
 				{% for itemloc in itemlocation %}
-						
-						
+						itemlocitemloc = "{{itemloc}}";
 						diff = ( Math.pow(2,4-{{itemloc.zoom}}) / 2).toFixed(2)-0;
-						$("#info1").html(heading+"-heading- "+"{{itemloc.head}}"+"<br/><br/> "+pitch+"-pitch- "+"{{itemloc.pitch}}<br/><br/>");
-						$("#info2").html( "{{itemloc.zoom}}"+" "+zoomlevel+" "+diff);
+						//$("#info1").html(heading+"-heading- "+"{{itemloc.head}}"+"<br/><br/> "+pitch+"-pitch- "+"{{itemloc.pitch}}<br/><br/>");
+						//$("#info2").html( "{{itemloc.zoom}}"+" "+zoomlevel+" "+diff);
+						z = "{{itemloc.zoom}}";
+						
 						if ( {{itemloc.zoom}} <= zoomlevel ){
+						someone = "{{itemloc.head}}";
 						if ( heading >= {{itemloc.head}}-diff && heading <= {{itemloc.head}}+diff && pitch >= {{itemloc.pitch}}-diff && pitch <= {{itemloc.pitch}}+diff ){
 							{% for itemfound in itemlist%}
 								if( "{{itemloc.item}}" == "{{itemfound.key}}")
 								{
+									
 									flag = 1;
 									itemname = "{{itemfound.item}}";
 									itemprice = "{{itemfound.price}}";
-									}
+								}
 								
 								
 							{% endfor %}
@@ -131,21 +136,26 @@ var heading;
 						}
 						
 				{% endfor %}
-				}
+				//} end of if for locationindex
 						i++;
 				{% endfor %}
 				
 				if(flag){
+						//alert(itemname);
 						$("#crosshair").css("border","5px solid #009939");
 					//	$("#crosshair").html(itemname);
 						$("#itemname").html(itemname);
 						$("#itemprice").html("{{currency}} "+itemprice);
+						$("#info1").html(itemname);
+						
 						$('#iteminfo').collapse('show');
 						
 						}
 						else {
 						$("#crosshair").css("border","5px solid #eee");
 						$("#crosshair").html("");
+						$("#itemname").html("");
+						$("#itemprice").html("");
 						$('#iteminfo').collapse('hide');
 								itemname = "";
 						}
@@ -160,6 +170,7 @@ var heading;
 			pitch = panorama.getPov().pitch ;
 			zoomlevel = panorama.getZoom().toFixed(2);
 			{% for itemposition in itempositionlist %}
+				
 				if({{itemposition.lati}} == pos.lat().toFixed(6) && {{itemposition.longi}} == pos.lng().toFixed(6))
 				{
 				
@@ -375,7 +386,6 @@ var heading;
 						break;
 			}
 		});
-	
 		$( "#clear" ).click(function() {
 		deleteCookie();
 		$('#dialoginfo').html("  All items removed from Cart");
@@ -439,6 +449,8 @@ var heading;
 			<hr/>
 			<div class="tab-content" style="position:relative;margin-left:5px;margin-right:5px;">
 				<div class="tab-pane active" id="tabs-1">
+					<h3>Item : <p id="itemname"></p></h3>
+					<h3>Price : <p id="itemprice"></p></h3>
 					<button class="btn btn-warning"  style="width:100%;" onclick="checkCookie()">Add item</button><br/><br/>
 					<button class="btn btn-danger"  style="width:100%;" onclick="removeItem()">Remove item</button><br/>
 					<hr/>
@@ -473,15 +485,7 @@ var heading;
 							
 		</div>	
 		
-		<div class="container">
-		<div id="iteminfo" class="panel panel-default collapse in" align="center">
-			<div id="itemname" class="panel-heading" style="font-weight:bold"></div>
-				<div class="panel-body">
-					<p id="itemprice"></p>
-				</div>
-							
-		</div>	
-		</div>
+		
 		
 	  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
